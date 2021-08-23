@@ -16,7 +16,9 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-handler = RotatingFileHandler('my_logger.log', maxBytes=50000000, backupCount=5)
+handler = RotatingFileHandler(
+    'my_logger.log', maxBytes=50000000, backupCount=5
+)
 logger.addHandler(handler)
 
 load_dotenv()
@@ -45,7 +47,11 @@ def get_homeworks(current_timestamp):
     url = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
     headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
     payload = {'from_date': current_timestamp}
-    homework_statuses = requests.get(url, headers=headers, params=payload, proxies=proxies)
+    homework_statuses = requests.get(
+        url,
+        headers=headers,
+        params=payload,
+        proxies=proxies)
     return homework_statuses.json()
 
 
