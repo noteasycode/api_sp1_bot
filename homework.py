@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from logging.handlers import RotatingFileHandler
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     filename='main.log',
     format='%(asctime)s, %(levelname)s, %(name)s, %(message)s'
 )
@@ -26,16 +26,16 @@ load_dotenv()
 PRAKTIKUM_TOKEN = os.getenv('PRAKTIKUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-
-# проинициализируйте бота здесь,
-# чтобы он был доступен в каждом нижеобъявленном методе,
-# и не нужно было прокидывать его в каждый вызов
+URL = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 
 def parse_homework_status(homework):
-    homework_name = homework['homework_name']
-    if homework['status'] == 'rejected':
+    homework_name = homework.get('homework_name')
+    homework_status = homework.get('status')
+    if homework_name is None:
+        return "The Yandex API sent empty data!"
+    if homework_status == 'rejected':
         verdict = 'К сожалению, в работе нашлись ошибки.'
     else:
         verdict = 'Ревьюеру всё понравилось, работа зачтена!'
@@ -43,15 +43,19 @@ def parse_homework_status(homework):
 
 
 def get_homeworks(current_timestamp):
-    proxies = {"https": "80.152.180.204:8080"}
-    url = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
+    if current_timestamp is None:
+        current_timestamp = int(time.time())
+    proxies = {"https": "83.171.140.148:80"}
     headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
     payload = {'from_date': current_timestamp}
-    homework_statuses = requests.get(
-        url,
-        headers=headers,
-        params=payload,
-        proxies=proxies)
+    try:
+        homework_statuses = requests.get(
+            URL,
+            headers=headers,
+            params=payload,
+            proxies=proxies)
+    except Exception as e:
+        logger.debug(f'Бот упал с ошибкой: {e}')
     return homework_statuses.json()
 
 
@@ -60,17 +64,17 @@ def send_message(message):
 
 
 def main():
-    # current_timestamp = int(time.time())  # Начальное значение timestamp
     current_timestamp = int(datetime.datetime.timestamp(
-        datetime.datetime.now() - datetime.timedelta(days=30)))
+        datetime.datetime.now() - datetime.timedelta(days=30)))  # Начальное значение timestamp
     while True:
         try:
             logger.debug('Отслеживание статуса запущено')
-            send_message(
-                parse_homework_status(
-                    get_homeworks(current_timestamp)['homeworks'][0]
-                )
-            )
+            homework_status = get_homeworks(current_timestamp)
+            if homework_status.get('homeworks'):
+                send_message(
+                    parse_homework_status(
+                        homework_status['homeworks'][0]))
+            current_timestamp = homework_status.get('current_date')
             logger.info('Бот отправил сообщение')
             time.sleep(5 * 60)  # Опрашивать раз в пять минут
 
