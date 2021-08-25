@@ -65,7 +65,7 @@ def send_message(message):
 
 def main():
     current_timestamp = int(datetime.datetime.timestamp(
-        datetime.datetime.now() - datetime.timedelta(days=30)))  # Начальное значение timestamp
+        datetime.datetime.now() - datetime.timedelta(days=30)))
     while True:
         try:
             logger.debug('Отслеживание статуса запущено')
