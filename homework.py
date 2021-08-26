@@ -78,7 +78,7 @@ def main():
                         homework_status['homeworks'][0]))
             current_timestamp = homework_status.get('current_date')
             logger.info('Бот отправил сообщение')
-            time.sleep(5 * 20)  # Опрашивать раз в пять минут
+            time.sleep(5 * 60)  # Опрашивать раз в пять минут
 
         except Exception as e:
             error_message = f'Бот упал с ошибкой: {e}'
