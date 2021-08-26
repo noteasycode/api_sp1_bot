@@ -45,7 +45,7 @@ def parse_homework_status(homework):
 def get_homeworks(current_timestamp):
     if current_timestamp is None:
         current_timestamp = int(time.time())
-    proxies = {"https": "83.171.140.148:80"}
+    proxies = {"https": "194.163.132.232:3128"}
     headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
     payload = {'from_date': current_timestamp}
     try:
@@ -54,8 +54,10 @@ def get_homeworks(current_timestamp):
             headers=headers,
             params=payload,
             proxies=proxies)
+    except requests.exceptions.RequestException as e:
+        raise f'Ошибка при работе с API {e}'
     except Exception as e:
-        logger.debug(f'Бот упал с ошибкой: {e}')
+        raise f'Бот упал с ошибкой: {e}'
     return homework_statuses.json()
 
 
@@ -76,7 +78,7 @@ def main():
                         homework_status['homeworks'][0]))
             current_timestamp = homework_status.get('current_date')
             logger.info('Бот отправил сообщение')
-            time.sleep(5 * 60)  # Опрашивать раз в пять минут
+            time.sleep(5 * 20)  # Опрашивать раз в пять минут
 
         except Exception as e:
             error_message = f'Бот упал с ошибкой: {e}'
