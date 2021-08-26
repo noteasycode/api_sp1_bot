@@ -45,15 +45,13 @@ def parse_homework_status(homework):
 def get_homeworks(current_timestamp):
     if current_timestamp is None:
         current_timestamp = int(time.time())
-    proxies = {"https": "194.163.132.232:3128"}
     headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
     payload = {'from_date': current_timestamp}
     try:
         homework_statuses = requests.get(
             URL,
             headers=headers,
-            params=payload,
-            proxies=proxies)
+            params=payload)
     except requests.exceptions.RequestException as e:
         raise f'Ошибка при работе с API {e}'
     except Exception as e:
